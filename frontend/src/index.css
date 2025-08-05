@@ -9,6 +9,10 @@
     font-style: normal;
   }
 
+  .font-ethnocentric {
+    font-family: 'Ethnocentric', sans-serif;
+  }
+
 * {
     margin: 0;
     padding: 0;
