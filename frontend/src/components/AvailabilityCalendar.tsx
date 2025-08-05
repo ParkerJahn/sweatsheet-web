@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Clock, Plus, X } from 'lucide-react';
-import './Availability.css'; 
+
 
 // Type definitions
 interface Event {

@@ -1,6 +1,7 @@
 import './Header.css';
 import { useEffect, useRef, useState } from 'react';
 import { Moon, Sun, Menu, X, HelpCircle, Settings } from 'lucide-react';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 
 function Header() {
     return (
@@ -81,30 +82,63 @@ const SideDrawer: React.FC = () => {
 
         {/* Example Navigation Links */}
         <nav className="mt-4 space-y-2 pl-2">
-          <button className="font-ethnocentric text-left text-black dark:text-white hover:text-white dark:hover:text-black bg-blue-500 dark:bg-blue-600 hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-700 dark:hover:bg-neutral-100 px-4 py-2 rounded transition">
-            <a className="" href="/">Home</a>
+          <a 
+            href="/"
+            className="font-ethnocentric text-left text-black dark:text-white hover:text-white dark:hover:text-black bg-blue-500 dark:bg-blue-600 hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-700 dark:hover:bg-neutral-100 px-4 py-2 rounded transition"
+            onClick={() => setIsOpen(false)}
+            >
+            Home
+          </a>
+          <a 
+           href="/calendar"
+           className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
+           onClick={() => setIsOpen(false)}
+           >
+            Calendar
+          </a>
+          <a 
+           href="/messages"
+           className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
+           onClick={() => setIsOpen(false)}
+           >
+            Messages
+          </a>
+          <a
+            href="/clients"
+            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
+            onClick={() => setIsOpen(false)}
+            >
+            Your Clients
+          </a>
+          <a
+            href="/shop"
+            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
+            onClick={() => setIsOpen(false)}
+            >
+            Shop DRP
+          </a>
+          <a 
+            href="/settings"
+            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition text-black dark:text-white flex items-center gap-2"
+            onClick={() => setIsOpen(false)}
+            >
+            Settings <Settings className="w-5 h-5" /> 
+          </a>
+          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-red-100 dark:hover:bg-red-300 px-4 py-2 rounded transition text-red-600 dark:text-red-600 text-shadow" 
+          onClick={() => {
+            localStorage.removeItem(ACCESS_TOKEN);
+            localStorage.removeItem(REFRESH_TOKEN);
+            window.location.reload();
+          }}>
+            Logout
           </button>
-          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition">
-            <a className="text-black dark:text-white" href="/calendar">Calendar</a>
-            </button>
-            <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition">
-            <a className="text-black dark:text-white" href="/contact">Messages</a>
-          </button>
-          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition">
-            <a className="text-black dark:text-white" href="/clients">Your Clients</a>
-          </button>
-          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition">
-            <a className="text-black dark:text-white" href="/shop">Shop DRP</a>
-          </button>
-          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition">
-            <a className="text-black dark:text-white" href="/settings"><Settings className="w-5 h-5" /></a>
-          </button>
-          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-red-100 dark:hover:bg-red-300 px-4 py-2 rounded transition">
-            <a className="text-red-600 dark:text-red-600 text-shadow" href="/logout/">Logout</a>
-          </button>
-          <button className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition">
-            <a className="text-blue-700 dark:text-blue-500" href="/help"><HelpCircle className="w-5 h-5" /></a>
-          </button>
+          <a 
+            href="/help"
+            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition text-blue-700 dark:text-blue-500"
+            onClick={() => setIsOpen(false)}
+            >
+            Help <HelpCircle className="w-5 h-5"/>
+          </a>
         </nav>
       </div>
     </>

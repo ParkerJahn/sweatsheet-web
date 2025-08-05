@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
+import LoadingIndicator from "./LoadingIndicator";
 
 function Form(route: string, method: string) {
     const [username, setUsername] = useState("");
@@ -50,28 +51,28 @@ function Form(route: string, method: string) {
             {isRegister && (
                 <>
                     <input 
-                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="text" 
                         placeholder="First Name" 
                         value={firstName} 
                         onChange={(e) => setFirstName(e.target.value)}
                         required />
                     <input 
-                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="text" 
                         placeholder="Last Name" 
                         value={lastName} 
                         onChange={(e) => setLastName(e.target.value)}
                         required />
                     <input 
-                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="email" 
                         placeholder="Email" 
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)}
                         required />
                     <input 
-                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="tel" 
                         placeholder="Phone Number" 
                         value={phoneNumber} 
@@ -82,14 +83,14 @@ function Form(route: string, method: string) {
             
             {/* Common fields */}
             <input 
-                className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 type="text" 
                 placeholder="Username" 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)}
                 required />
             <input 
-                className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 type="password" 
                 placeholder="Password" 
                 value={password} 
@@ -101,6 +102,7 @@ function Form(route: string, method: string) {
                 disabled={loading}>
                 {loading ? "Loading..." : name}
             </button>
+            {loading && <LoadingIndicator />}
             <a className="text-blue-500 dark:text-blue-400 hover:underline" href={`/${method === "login" ? "register" : "login"}`}>
                 {method === "login" ? "Don't have an account? Register" : "Already have an account? Login"}
             </a>
