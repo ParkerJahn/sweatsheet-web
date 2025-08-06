@@ -4,13 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import LoadingIndicator from "./LoadingIndicator";
 
-function Form(route: string, method: string) {
+function Form({ route, method }: { route: string, method: string }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [password2, setPassword2] = useState("");
     const [email, setEmail] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [role, setRole] = useState("ATHLETE");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -20,10 +22,16 @@ function Form(route: string, method: string) {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         setLoading(true);
         e.preventDefault();
+
+        if (isRegister && password !== password2) {
+            alert("Passwords do not match");
+            setLoading(false);
+            return;
+        }
         
         try { 
             const payload = isRegister 
-                ? { username, password, email, phone_number: phoneNumber, first_name: firstName, last_name: lastName }
+                ? { username, password, password2, email, first_name: firstName, last_name: lastName, profile: { phone_number: phoneNumber, role: role } }
                 : { username, password };
                 
             const res = await api.post(route, payload);
@@ -50,6 +58,14 @@ function Form(route: string, method: string) {
             {/* Registration-only fields */}
             {isRegister && (
                 <>
+                    <select
+                        className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                    >
+                        <option value="PRO">SweatPro <span className="text-sm text-gray-500">(coach, trainer, provider)</span></option>
+                        <option value="ATHLETE">SweatAthlete <span className="text-sm text-gray-500">(player, client, patient)</span></option>
+                    </select>
                     <input 
                         className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         type="text" 
@@ -96,6 +112,16 @@ function Form(route: string, method: string) {
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 required />
+            {isRegister && (
+                <input
+                    className="w-full p-2 mb-3 border border-gray-300 rounded box-border text-gray-900 dark:text-white bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={password2}
+                    onChange={(e) => setPassword2(e.target.value)}
+                    required
+                />
+            )}
             <button 
                 className={`w-full py-2 mt-4 mb-2 rounded text-white transition-colors duration-300 ease-in-out ${loading ? "bg-gray-300 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-800"}`}
                 type="submit" 

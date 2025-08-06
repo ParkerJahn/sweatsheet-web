@@ -7,6 +7,21 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
+import Calendar from './pages/Calendar';
+import Profile from './pages/Profile';
+
+// Initialize theme on app load
+const initializeTheme = () => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+};
+
+// Apply theme immediately
+initializeTheme();
 
 function Logout() {
   localStorage.clear();
@@ -34,6 +49,16 @@ function App() {
               </ProtectedRoute>
              }
           />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <Calendar />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegisterAndLogout />} />
           <Route path="*" element={<NotFound />} />

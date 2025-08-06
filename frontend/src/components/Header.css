@@ -1,3 +1,71 @@
 img {
     transition: all 0.3s ease-in-out;
 }
+
+/* Animated line styles */
+.animated-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 60px; /* Fixed width for shorter line */
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+    background-size: 200% 100%;
+    animation: slideAndGlow 6s ease-in-out infinite; /* Increased from 3s to 6s */
+    border-radius: 1px;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.dark .animated-line {
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #22d3ee, #60a5fa);
+    background-size: 200% 100%;
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
+}
+
+@keyframes slideAndGlow {
+    0% {
+        left: 0%;
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    50% {
+        left: calc(100% - 60px); /* Account for line width */
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+/* Alternative animation for a continuous flowing line */
+.flowing-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent);
+    background-size: 200% 100%;
+    animation: flow 4s linear infinite;
+    border-radius: 1px;
+}
+
+.dark .flowing-line {
+    background: linear-gradient(90deg, transparent, #60a5fa, #a78bfa, #22d3ee, transparent);
+    background-size: 200% 100%;
+}
+
+@keyframes flow {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}

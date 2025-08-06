@@ -2,11 +2,42 @@ import './Header.css';
 import { useEffect, useRef, useState } from 'react';
 import { Moon, Sun, Menu, X, HelpCircle, Settings } from 'lucide-react';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
+import api from '../api';
+import Avatar from './Avatar';
+
+interface ProfileData {
+    first_name: string;
+    last_name: string;
+}
 
 function Header() {
+    const [profile, setProfile] = useState<ProfileData | null>(null);
+
+    useEffect(() => {
+        if (localStorage.getItem(ACCESS_TOKEN)) {
+            api.get('/api/profile/')
+                .then(res => {
+                    // Transform the data to match Avatar component expectations
+                    const profileData = {
+                        first_name: res.data.first_name,
+                        last_name: res.data.last_name
+                    };
+                    setProfile(profileData);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        }
+    }, []);
+
     return (
     <>
     <div className="flex justify-center items-center relative p-5">
+        {profile && (
+            <a href="/profile" className="cursor-pointer hover:scale-105 transition-transform duration-200 absolute right-4">
+                <Avatar profile={profile} />
+            </a>
+        )}
       <img 
       className="block dark:hidden w-[200px] h-[120px] transition-opacity duration-300" 
       src="lightmodelogo.png" 
@@ -18,18 +49,32 @@ function Header() {
         <div className="flex ml-10 justify-end items-center relative">
           <SideDrawer/>
         </div>
+        {/* Animated line at the bottom of header */}
+        <div className="animated-line"></div>
+        {/* Alternative flowing line animation (uncomment to use instead) */}
+        {/* <div className="flowing-line"></div> */}
     </div>
     </>
   );
 }
 const SideDrawer: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    // Load theme preference from localStorage on initial render
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      return savedTheme === 'dark';
+    }
+    // Default to light mode if no preference is saved
+    return false;
+  });
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  // Toggle dark mode
+  // Toggle dark mode and save to localStorage
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
 
   // Close sidebar if clicking outside of it
@@ -47,9 +92,10 @@ const SideDrawer: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Apply dark mode class to <body>
+  // Apply dark mode class to <body> and save to localStorage
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
   return (
@@ -116,6 +162,13 @@ const SideDrawer: React.FC = () => {
             onClick={() => setIsOpen(false)}
             >
             Shop DRP
+          </a>
+          <a 
+            href="/profile"
+            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition text-black dark:text-white flex items-center gap-2"
+            onClick={() => setIsOpen(false)}
+            >
+            Profile
           </a>
           <a 
             href="/settings"

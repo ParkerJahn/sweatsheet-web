@@ -24,4 +24,17 @@
     .sidenav a {font-size: 16px;}
   }
 
+@keyframes flip-vertical {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.animate-flip-vertical {
+  animation: flip-vertical 1s linear infinite;
+}
+
 
