@@ -31,7 +31,7 @@ function Header() {
                         setProfile(profileData);
                     })
                     .catch(err => {
-                        console.error(err);
+                        console.error('Header profile fetch error:', err);
                         // If profile fetch fails, user might not be properly logged in
                         setIsLoggedIn(false);
                         localStorage.removeItem(ACCESS_TOKEN);
@@ -63,7 +63,7 @@ function Header() {
 
     return (
     <>
-    <div className="flex justify-center items-center relative p-5">
+    <div className="flex justify-center items-center relative p-5 bg-white dark:bg-neutral-800">
         {isLoggedIn && profile && (
             <a href="/profile" className="cursor-pointer hover:scale-105 transition-transform duration-200 absolute right-4">
                 <Avatar profile={profile} />
@@ -108,6 +108,8 @@ const SideDrawer: React.FC = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    // Update document class immediately
+    document.documentElement.classList.toggle('dark', newTheme);
   };
 
   // Close sidebar if clicking outside of it
@@ -125,11 +127,33 @@ const SideDrawer: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Apply dark mode class to <body> and save to localStorage
+  // Sync with localStorage changes and ensure document class is correct
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    const savedTheme = localStorage.getItem('theme');
+    const shouldBeDark = savedTheme === 'dark';
+    
+    // Update local state if it doesn't match localStorage
+    if (isDarkMode !== shouldBeDark) {
+      setIsDarkMode(shouldBeDark);
+    }
+    
+    // Ensure document class matches the theme
+    document.documentElement.classList.toggle('dark', shouldBeDark);
   }, [isDarkMode]);
+
+  // Listen for storage changes (in case theme is changed from another component)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'theme') {
+        const newTheme = e.newValue === 'dark';
+        setIsDarkMode(newTheme);
+        document.documentElement.classList.toggle('dark', newTheme);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
     <>
@@ -162,7 +186,7 @@ const SideDrawer: React.FC = () => {
         {/* Example Navigation Links */}
         <nav className="mt-4 space-y-2 pl-2">
           <a 
-            href="/"
+            href="/home"
             className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
             onClick={() => setIsOpen(false)}
             >

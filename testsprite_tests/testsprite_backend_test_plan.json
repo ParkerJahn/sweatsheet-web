@@ -1,0 +1,47 @@
+[
+  {
+    "id": "TC001",
+    "title": "user registration with role selection",
+    "description": "Test the user registration API to ensure new users can register with a valid username, password, email, first name, last name, and role selection (PRO, ATHLETE, SWEAT_TEAM_MEMBER). Verify successful creation and proper validation error handling."
+  },
+  {
+    "id": "TC002",
+    "title": "jwt authentication token issuance and refresh",
+    "description": "Test the JWT authentication API to verify that users can obtain access and refresh tokens with valid credentials and can refresh the access token using a valid refresh token. Check for proper error responses on invalid credentials or tokens."
+  },
+  {
+    "id": "TC003",
+    "title": "profile management view and update",
+    "description": "Test the profile management API to ensure authenticated users can retrieve their profile information and update fields such as first name, last name, email, and phone number. Verify role-based permissions and validation error handling."
+  },
+  {
+    "id": "TC004",
+    "title": "team management user list retrieval with role filtering",
+    "description": "Test the team management API endpoints to verify that users can retrieve the full user list and the filtered list of athletes. Ensure proper role-based access control and correct data retrieval."
+  },
+  {
+    "id": "TC005",
+    "title": "sweatsheet management create list and assign",
+    "description": "Test the SweatSheet management API to verify that SweatPros can create new SweatSheets, list SweatSheets based on user role, retrieve details of a specific SweatSheet, and assign SweatSheets to athletes. Validate permission checks and data integrity."
+  },
+  {
+    "id": "TC006",
+    "title": "workout exercise library category and exercise retrieval",
+    "description": "Test the workout exercise library API to ensure users can retrieve all workout categories and filter workout exercises by category. Verify correct data structure and security enforcement."
+  },
+  {
+    "id": "TC007",
+    "title": "calendar management get and update events",
+    "description": "Test the calendar management API to verify that users can retrieve their calendar events and update them. Ensure that events include correct details such as id, time, title, type, and duration, and that updates are persisted."
+  },
+  {
+    "id": "TC008",
+    "title": "notes management create retrieve and delete",
+    "description": "Test the notes management API to ensure users can create new notes, retrieve their notes list, and delete notes by id. Verify proper authentication, authorization, and error handling for non-existent notes."
+  },
+  {
+    "id": "TC009",
+    "title": "exercise progress tracking mark phase and exercise complete",
+    "description": "Test the exercise progress tracking API to verify that users can mark phases and exercises as complete. Check for correct status updates and proper handling of invalid or non-existent phase or exercise ids."
+  }
+]

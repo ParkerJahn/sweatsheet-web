@@ -8,6 +8,14 @@ urlpatterns = [
     path('calendar/', views.CalendarView.as_view(), name='calendar'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     
+    # Messaging URLs
+    path('conversations/', views.ConversationListView.as_view(), name='conversation-list'),
+    path('conversations/<int:pk>/', views.ConversationDetailView.as_view(), name='conversation-detail'),
+    path('conversations/<int:conversation_id>/messages/', views.MessageListCreateView.as_view(), name='message-list'),
+    path('conversations/<int:conversation_id>/messages/<int:pk>/', views.MessageDetailView.as_view(), name='message-detail'),
+    path('conversations/<int:conversation_id>/mark-read/', views.MarkMessageAsReadView.as_view(), name='mark-read'),
+    path('conversations/direct/', views.GetOrCreateDirectConversationView.as_view(), name='direct-conversation'),
+    
     # SweatSheet URLs
     path('workout-categories/', views.WorkoutCategoryListView.as_view(), name='workout-categories'),
     path('workout-exercises/', views.WorkoutExerciseListView.as_view(), name='workout-exercises'),

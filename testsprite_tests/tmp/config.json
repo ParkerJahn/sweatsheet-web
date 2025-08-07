@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5173",
+  "loginUser": "DRP12",
+  "loginPassword": "Jsolves90",
+  "executionArgs": {
+    "projectName": "sweatsheet-web",
+    "projectPath": "/Users/parkerjahn/Desktop/sweatsheet-web",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-U6HToaX6PdzB2uPef_HtzHrigRmV9NPrEKk8IckHN_BMU2Ma_14jsmiCvhHCy8ZPGQ7L97OE2pIv6lSjfWYv_3CRfn8jRFViZPgaTs2dQBbKvSeGlS6GrtcrWMWJoDBcdbg"
+    }
+  },
+  "proxy": "http://7873f87c-33c7-4418-a5e9-3f83870e2507:l2aRX4q8DaqZTBRaXZS02F3YYhuup7PV@tun.testsprite.com:8080"
+}

@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "project": "DRP Workshop",
+    "date": "2025-07-30",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "DRP Workshop is a comprehensive fitness management web application designed for trainers (SweatPros), team staff (SweatTeamMembers), and clients (SweatAthletes). It centralizes workout plan creation, scheduling, communication, and payment processing to streamline fitness business operations in one seamless, responsive platform.",
+  "core_goals": [
+    "Enable SweatPros to effortlessly create, manage, and assign personalized workout plans (SweatSheets) to athletes.",
+    "Provide an integrated calendar and booking system for trainers and athletes to coordinate sessions with automated reminders.",
+    "Facilitate real-time messaging and notifications among trainers, team members, and athletes for enhanced communication.",
+    "Support secure payments and package management, including an e-commerce shop experience.",
+    "Deliver role-based dashboards offering insights on athlete progress, schedules, payments, and business health.",
+    "Ensure an accessible, responsive user interface that works smoothly on mobile, tablet, and desktop devices."
+  ],
+  "key_features": [
+    "User registration, authentication, and role-based access control with JWT token management and protected routes.",
+    "SweatSheet management including creation, editing, assignment, and progress tracking.",
+    "Calendar and booking system with trainer availability, athlete session booking, cancellation, and calendar sync.",
+    "Real-time 1:1 and group messaging with push and email notifications.",
+    "Integrated secure payment processing supporting multiple payment methods and package management.",
+    "Product listing and purchase flow within the Shop module for workouts related merchandise and items.",
+    "Responsive header with theme toggle (dark/light), user avatar display, and navigation menu.",
+    "Google Analytics 4 integration for event tracking and usage analytics.",
+    "Persistent theme system with smooth transitions and accessibility features.",
+    "Loading indicators and error handling for robust UI state management."
+  ],
+  "user_flow_summary": [
+    "User lands on onboarding wizard to create account, select role (SweatPro, SweatTeamMember, or SweatAthlete), and set up profile and preferences.",
+    "User logs in and arrives at a personalized dashboard tailored to their role.",
+    "SweatPro creates and assigns SweatSheets via a user-friendly interface with media attachments and drag-and-drop exercise building.",
+    "SweatAthlete receives notifications of assigned SweatSheets and can view, track progress, and provide feedback.",
+    "Athlete books training sessions by viewing trainer availability; booking confirmations synchronize with calendars and trigger automated reminders.",
+    "Users communicate through messaging system supporting private and group chats for team coordination and feedback.",
+    "Athletes purchase packages and shop items securely using integrated payment processing; trainers and team members manage payment status and order fulfillment.",
+    "Users access settings for managing profile, preferences, and theme, while trainers and team members oversee dashboards displaying key metrics and business health."
+  ],
+  "validation_criteria": [
+    "User authentication supports registration, login, password recovery, and secure JWT token management with protected routes enforced.",
+    "SweatSheet creation and assignment workflows perform real-time validation; assigned athletes can access, track, and mark workouts as complete.",
+    "Calendar shows accurate trainer availabilities; booking workflows prevent conflicts, support cancellations, and send automated reminders.",
+    "Messaging functionality delivers messages in real-time with notification alerts and group chat capabilities.",
+    "Payments process securely through integrated providers with error handling and reflect in user dashboards and receipts.",
+    "Shop module allows product listing, purchase, order tracking, and inventory management with smooth UX.",
+    "Application UI is fully responsive with dark/light mode support and consistent, accessible design elements.",
+    "System uptime remains above 99.9%, average page load time remains under 2 seconds, and key user and business metrics are tracked accurately through Google Analytics."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "React",
+      "Vite",
+      "Tailwind CSS",
+      "React Router",
+      "Lucide React",
+      "Axios",
+      "JWT",
+      "Google Analytics"
+    ],
+    "features": [
+      {
+        "name": "Authentication System",
+        "description": "Complete authentication system with login, register, JWT token management, and protected routes",
+        "files": [
+          "frontend/src/pages/Login.tsx",
+          "frontend/src/pages/Register.tsx",
+          "frontend/src/components/Form.tsx",
+          "frontend/src/components/ProtectedRoute.tsx",
+          "frontend/src/api.ts",
+          "frontend/src/constants.ts"
+        ]
+      },
+      {
+        "name": "Navigation & Header",
+        "description": "Responsive header with theme toggle, user avatar, navigation menu, and dark/light mode support",
+        "files": [
+          "frontend/src/components/Header.tsx",
+          "frontend/src/components/Header.css",
+          "frontend/src/components/Avatar.tsx"
+        ]
+      },
+      {
+        "name": "SweatSheet Management",
+        "description": "Complete workout program management system with creator, viewer, manager, and assignment features",
+        "files": [
+          "frontend/src/components/SweatSheetCreator.tsx",
+          "frontend/src/components/SweatSheetViewer.tsx",
+          "frontend/src/components/SweatSheetManager.tsx",
+          "frontend/src/components/SweatSheetAssignment.tsx",
+          "frontend/src/pages/SweatSheet.tsx"
+        ]
+      },
+      {
+        "name": "User Profile & Team",
+        "description": "User profile management, team display, and user information handling",
+        "files": [
+          "frontend/src/pages/Profile.tsx",
+          "frontend/src/pages/Team.tsx"
+        ]
+      },
+      {
+        "name": "Calendar & Scheduling",
+        "description": "Calendar functionality with availability management and scheduling features",
+        "files": [
+          "frontend/src/pages/Calendar.tsx",
+          "frontend/src/components/AvailabilityCalendar.tsx"
+        ]
+      },
+      {
+        "name": "Messaging System",
+        "description": "Real-time messaging system with conversations and message management",
+        "files": [
+          "frontend/src/pages/Messages.tsx"
+        ]
+      },
+      {
+        "name": "Settings & Shop",
+        "description": "User settings management and e-commerce shop functionality",
+        "files": [
+          "frontend/src/pages/Settings.tsx",
+          "frontend/src/pages/Shop.tsx"
+        ]
+      },
+      {
+        "name": "Analytics Integration",
+        "description": "Google Analytics 4 integration with comprehensive event tracking and user analytics",
+        "files": [
+          "frontend/src/services/analytics.ts",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "name": "Loading & UI States",
+        "description": "Loading indicators, error handling, and UI state management",
+        "files": [
+          "frontend/src/components/LoadingIndicator.tsx",
+          "frontend/src/components/LoadingPage.tsx",
+          "frontend/src/contexts/LoadingContext.tsx"
+        ]
+      },
+      {
+        "name": "Theme System",
+        "description": "Dark/light theme system with persistent storage and smooth transitions",
+        "files": [
+          "frontend/src/App.tsx",
+          "frontend/src/components/Header.tsx",
+          "frontend/src/pages/Settings.tsx",
+          "frontend/src/index.css"
+        ]
+      },
+      {
+        "name": "Main Application",
+        "description": "Core application setup with routing, analytics initialization, and global state management",
+        "files": [
+          "frontend/src/App.tsx",
+          "frontend/src/main.tsx",
+          "frontend/src/index.css"
+        ]
+      },
+      {
+        "name": "Home & Landing",
+        "description": "Home page with welcome messages and user dashboard",
+        "files": [
+          "frontend/src/pages/Home.tsx"
+        ]
+      }
+    ]
+  }
+}

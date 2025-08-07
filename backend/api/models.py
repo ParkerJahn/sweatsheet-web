@@ -48,6 +48,77 @@ class Calendar(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Calendar"
 
+# Messaging Models
+class Conversation(models.Model):
+    CONVERSATION_TYPES = (
+        ('DIRECT', 'Direct Message'),
+        ('GROUP', 'Group Chat'),
+    )
+    
+    participants = models.ManyToManyField(User, related_name='conversations')
+    conversation_type = models.CharField(max_length=10, choices=CONVERSATION_TYPES, default='DIRECT')
+    title = models.CharField(max_length=200, blank=True)  # For group chats
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        if self.conversation_type == 'DIRECT':
+            participants = list(self.participants.all())
+            if len(participants) >= 2:
+                return f"{participants[0].username} & {participants[1].username}"
+            return f"Direct message"
+        return self.title or f"Group chat #{self.id}"
+    
+    @property
+    def last_message(self):
+        return self.messages.first()  # Due to ordering by -created_at
+    
+    def get_other_participant(self, user):
+        """Get the other participant in a direct conversation"""
+        if self.conversation_type == 'DIRECT':
+            return self.participants.exclude(id=user.id).first()
+        return None
+
+class Message(models.Model):
+    MESSAGE_TYPES = (
+        ('TEXT', 'Text Message'),
+        ('IMAGE', 'Image'),
+        ('FILE', 'File'),
+        ('SYSTEM', 'System Message'),
+    )
+    
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='TEXT')
+    content = models.TextField()
+    file_url = models.URLField(blank=True)  # For images/files
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(null=True, blank=True)
+    is_edited = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.sender.username}: {self.content[:50]}..."
+
+class MessageRead(models.Model):
+    """Track read status of messages per user"""
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='read_by')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='read_messages')
+    read_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['message', 'user']
+    
+    def __str__(self):
+        return f"{self.user.username} read message {self.message.id}"
+
 # SweatSheet Models
 class WorkoutCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)

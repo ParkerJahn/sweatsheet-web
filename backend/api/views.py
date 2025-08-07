@@ -3,15 +3,25 @@ from django.contrib.auth.models import User
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from django.db.models import Q, Max
 from .serializers import (
-    UserSerializer, NoteSerializer, CalendarSerializer, ProfileSerializer,
+    UserSerializer, NoteSerializer, CalendarSerializer, ProfileSerializer, ProfileUpdateSerializer, TeamUserSerializer,
     WorkoutCategorySerializer, WorkoutExerciseSerializer, SweatSheetSerializer,
-    PhaseSerializer, SectionSerializer, ExerciseSerializer
+    PhaseSerializer, SectionSerializer, ExerciseSerializer,
+    # Messaging serializers
+    MessageSerializer, ConversationListSerializer, ConversationDetailSerializer, ConversationCreateSerializer
 )
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Note, Calendar, Profile, WorkoutCategory, WorkoutExercise, SweatSheet, Phase, Section, Exercise
+from .models import (
+    Note, Calendar, Profile, WorkoutCategory, WorkoutExercise, SweatSheet, Phase, Section, Exercise,
+    # Messaging models
+    Conversation, Message, MessageRead
+)
 from django.db import models
 from rest_framework import serializers
+from rest_framework.views import APIView
+from django.utils import timezone
+from django.http import JsonResponse
 
 def has_sweatpro_permissions(user):
     """Check if user has SweatPro permissions (PRO or SWEAT_TEAM_MEMBER)"""
@@ -64,11 +74,252 @@ class CalendarView(generics.RetrieveUpdateAPIView):
         return self.request.user.calendar
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = ProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user.profile
+    def get(self, request):
+        user = request.user
+        try:
+            profile_data = {
+                'id': user.id,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'profile': {
+                    'role': user.profile.role,
+                    'phone_number': user.profile.phone_number,
+                }
+            }
+            return JsonResponse(profile_data)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    def patch(self, request):
+        user = request.user
+        data = request.data
+        
+        try:
+            # Update user fields
+            if 'first_name' in data:
+                user.first_name = data['first_name']
+            if 'last_name' in data:
+                user.last_name = data['last_name']
+            if 'email' in data:
+                user.email = data['email']
+            user.save()
+            
+            # Update profile fields
+            if 'phone_number' in data:
+                user.profile.phone_number = data['phone_number']
+                user.profile.save()
+                
+            return self.get(request)  # Return updated data
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+# Messaging Views
+class ConversationListView(generics.ListCreateAPIView):
+    """List conversations for current user and create new conversations"""
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ConversationCreateSerializer
+        return ConversationListSerializer
+    
+    def get_queryset(self):
+        return Conversation.objects.filter(
+            participants=self.request.user,
+            is_active=True
+        ).distinct()
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Check if direct conversation already exists
+        if serializer.validated_data.get('conversation_type') == 'DIRECT':
+            participant_ids = serializer.validated_data['participant_ids']
+            if len(participant_ids) == 1:
+                # Check for existing direct conversation
+                other_user_id = participant_ids[0]
+                existing_conversation = Conversation.objects.filter(
+                    conversation_type='DIRECT',
+                    participants=request.user
+                ).filter(
+                    participants=other_user_id
+                ).first()
+                
+                if existing_conversation:
+                    return Response(
+                        ConversationDetailSerializer(existing_conversation, context={'request': request}).data,
+                        status=status.HTTP_200_OK
+                    )
+        
+        conversation = serializer.save()
+        return Response(
+            ConversationDetailSerializer(conversation, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )
+
+class ConversationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Get, update, or delete a specific conversation"""
+    serializer_class = ConversationDetailSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return Conversation.objects.filter(
+            participants=self.request.user,
+            is_active=True
+        )
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    """List messages in a conversation and create new messages"""
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        conversation_id = self.kwargs['conversation_id']
+        # Verify user is participant in conversation
+        conversation = Conversation.objects.filter(
+            id=conversation_id,
+            participants=self.request.user
+        ).first()
+        
+        if not conversation:
+            return Message.objects.none()
+        
+        return Message.objects.filter(
+            conversation=conversation,
+            is_deleted=False
+        )
+    
+    def perform_create(self, serializer):
+        conversation_id = self.kwargs['conversation_id']
+        conversation = Conversation.objects.filter(
+            id=conversation_id,
+            participants=self.request.user
+        ).first()
+        
+        if not conversation:
+            raise serializers.ValidationError("Conversation not found or access denied")
+        
+        message = serializer.save(
+            conversation=conversation,
+            sender=self.request.user
+        )
+        
+        # Update conversation timestamp
+        conversation.updated_at = timezone.now()
+        conversation.save()
+
+class MessageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Get, update, or delete a specific message"""
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        conversation_id = self.kwargs['conversation_id']
+        return Message.objects.filter(
+            conversation_id=conversation_id,
+            conversation__participants=self.request.user,
+            is_deleted=False
+        )
+    
+    def perform_update(self, serializer):
+        # Only allow sender to edit their own messages
+        message = self.get_object()
+        if message.sender != self.request.user:
+            raise serializers.ValidationError("You can only edit your own messages")
+        
+        serializer.save(
+            is_edited=True,
+            edited_at=timezone.now()
+        )
+    
+    def perform_destroy(self, instance):
+        # Only allow sender to delete their own messages
+        if instance.sender != self.request.user:
+            raise serializers.ValidationError("You can only delete your own messages")
+        
+        # Soft delete
+        instance.is_deleted = True
+        instance.save()
+
+class MarkMessageAsReadView(APIView):
+    """Mark messages as read"""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, conversation_id):
+        try:
+            conversation = Conversation.objects.get(
+                id=conversation_id,
+                participants=request.user
+            )
+            
+            message_ids = request.data.get('message_ids', [])
+            
+            # Mark messages as read
+            for message_id in message_ids:
+                try:
+                    message = Message.objects.get(
+                        id=message_id,
+                        conversation=conversation
+                    )
+                    MessageRead.objects.get_or_create(
+                        message=message,
+                        user=request.user
+                    )
+                except Message.DoesNotExist:
+                    continue
+            
+            return Response({'status': 'success'})
+            
+        except Conversation.DoesNotExist:
+            return Response(
+                {'error': 'Conversation not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class GetOrCreateDirectConversationView(APIView):
+    """Get or create a direct conversation with another user"""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        other_user_id = request.data.get('user_id')
+        
+        if not other_user_id:
+            return Response(
+                {'error': 'user_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            other_user = User.objects.get(id=other_user_id)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check for existing conversation
+        conversation = Conversation.objects.filter(
+            conversation_type='DIRECT',
+            participants=request.user
+        ).filter(
+            participants=other_user
+        ).first()
+        
+        if conversation:
+            serializer = ConversationDetailSerializer(conversation, context={'request': request})
+            return Response(serializer.data)
+        
+        # Create new conversation
+        conversation = Conversation.objects.create(conversation_type='DIRECT')
+        conversation.participants.add(request.user, other_user)
+        
+        serializer = ConversationDetailSerializer(conversation, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 # SweatSheet Views
 class WorkoutCategoryListView(generics.ListAPIView):
@@ -99,10 +350,15 @@ class SweatSheetListView(generics.ListCreateAPIView):
                 models.Q(user=user) | models.Q(is_template=True)
             )
         else:
-            # SweatAthletes see assigned SweatSheets
-            return SweatSheet.objects.filter(assigned_to=user, is_active=True)
+            # Athletes see their assigned SweatSheets and templates
+            return SweatSheet.objects.filter(
+                models.Q(assigned_to=user) | models.Q(is_template=True)
+            )
     
     def perform_create(self, serializer):
+        # Only SweatPros can create SweatSheets
+        if not has_sweatpro_permissions(self.request.user):
+            raise serializers.ValidationError("Only SweatPros can create SweatSheets")
         serializer.save(user=self.request.user)
 
 class SweatSheetDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -111,147 +367,98 @@ class SweatSheetDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        
         if has_sweatpro_permissions(user):
-            # SweatPros and SweatTeamMembers can access their created SweatSheets and templates
-            return SweatSheet.objects.filter(
-                models.Q(user=user) | models.Q(is_template=True)
-            )
+            return SweatSheet.objects.filter(user=user)
         else:
-            # SweatAthletes can access assigned SweatSheets
-            return SweatSheet.objects.filter(assigned_to=user, is_active=True)
+            return SweatSheet.objects.filter(assigned_to=user)
 
 class SweatSheetAssignmentView(generics.UpdateAPIView):
-    serializer_class = SweatSheetSerializer
     permission_classes = [IsAuthenticated]
     
-    def get_queryset(self):
-        # Only SweatPros and SweatTeamMembers can assign SweatSheets
-        return SweatSheet.objects.filter(user=self.request.user)
-    
-    def perform_update(self, serializer):
-        # Validate that assigned user is an athlete
-        assigned_user = serializer.validated_data.get('assigned_to')
-        if assigned_user and not is_athlete(assigned_user):
-            raise serializers.ValidationError("Can only assign SweatSheets to athletes")
-        serializer.save()
+    def patch(self, request, pk):
+        # Only SweatPros can assign SweatSheets
+        if not has_sweatpro_permissions(request.user):
+            return Response({"error": "Only SweatPros can assign SweatSheets"}, status=403)
+        
+        try:
+            sweatsheet = SweatSheet.objects.get(pk=pk, user=request.user)
+            athlete_ids = request.data.get('athletes', [])
+            
+            for athlete_id in athlete_ids:
+                athlete = User.objects.get(pk=athlete_id, profile__role='ATHLETE')
+                # Create a copy for assignment
+                assigned_sheet = SweatSheet.objects.create(
+                    name=sweatsheet.name,
+                    user=sweatsheet.user,
+                    assigned_to=athlete,
+                    is_template=False
+                )
+                # TODO: Copy phases, sections, and exercises
+            
+            return Response({"message": "SweatSheet assigned successfully"})
+        except SweatSheet.DoesNotExist:
+            return Response({"error": "SweatSheet not found"}, status=404)
 
 class UserListView(generics.ListAPIView):
-    serializer_class = UserSerializer
+    serializer_class = TeamUserSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Return athletes for assignment (only ATHLETE role)
-        return User.objects.filter(profile__role='ATHLETE')
+        # SweatPros see all athletes
+        if has_sweatpro_permissions(self.request.user):
+            return User.objects.filter(profile__role='ATHLETE').select_related('profile')
+        else:
+            # Athletes see no one (or could see teammates)
+            return User.objects.none()
 
 class AllUsersListView(generics.ListAPIView):
-    serializer_class = UserSerializer
+    queryset = User.objects.all().select_related('profile')
+    serializer_class = TeamUserSerializer
     permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        user = self.request.user
-        
-        # All users can view the team, but with different filtering based on role
-        if has_sweatpro_permissions(user):
-            # SweatPros and SweatTeamMembers can see all users
-            return User.objects.all().select_related('profile')
-        else:
-            # Athletes can see all users (for team view) but with limited information
-            return User.objects.all().select_related('profile')
 
-class PhaseListView(generics.ListCreateAPIView):
+class PhaseListView(generics.ListAPIView):
     serializer_class = PhaseSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        user = self.request.user
-        sweat_sheet_id = self.kwargs.get('sweat_sheet_id')
-        
-        if has_sweatpro_permissions(user):
-            # SweatPros and SweatTeamMembers can access phases of their created SweatSheets
-            return Phase.objects.filter(sweat_sheet_id=sweat_sheet_id, sweat_sheet__user=user)
-        else:
-            # SweatAthletes can access phases of their assigned SweatSheets
-            return Phase.objects.filter(sweat_sheet_id=sweat_sheet_id, sweat_sheet__assigned_to=user)
-    
-    def perform_create(self, serializer):
-        sweat_sheet_id = self.kwargs.get('sweat_sheet_id')
-        user = self.request.user
-        
-        if has_sweatpro_permissions(user):
-            sweat_sheet = SweatSheet.objects.get(id=sweat_sheet_id, user=user)
-        else:
-            sweat_sheet = SweatSheet.objects.get(id=sweat_sheet_id, assigned_to=user)
-        serializer.save(sweat_sheet=sweat_sheet)
+        sweat_sheet_id = self.kwargs['sweat_sheet_id']
+        return Phase.objects.filter(sweat_sheet_id=sweat_sheet_id)
 
-class SectionListView(generics.ListCreateAPIView):
+class SectionListView(generics.ListAPIView):
     serializer_class = SectionSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        user = self.request.user
-        phase_id = self.kwargs.get('phase_id')
-        
-        if has_sweatpro_permissions(user):
-            # SweatPros and SweatTeamMembers can access sections of their created phases
-            return Section.objects.filter(phase_id=phase_id, phase__sweat_sheet__user=user)
-        else:
-            # SweatAthletes can access sections of their assigned phases
-            return Section.objects.filter(phase_id=phase_id, phase__sweat_sheet__assigned_to=user)
-    
-    def perform_create(self, serializer):
-        phase_id = self.kwargs.get('phase_id')
-        user = self.request.user
-        
-        if has_sweatpro_permissions(user):
-            phase = Phase.objects.get(id=phase_id, sweat_sheet__user=user)
-        else:
-            phase = Phase.objects.get(id=phase_id, sweat_sheet__assigned_to=user)
-        serializer.save(phase=phase)
+        phase_id = self.kwargs['phase_id']
+        return Section.objects.filter(phase_id=phase_id)
 
-class ExerciseListView(generics.ListCreateAPIView):
+class ExerciseListView(generics.ListAPIView):
     serializer_class = ExerciseSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        user = self.request.user
-        section_id = self.kwargs.get('section_id')
-        
-        if has_sweatpro_permissions(user):
-            # SweatPros and SweatTeamMembers can access exercises of their created sections
-            return Exercise.objects.filter(section_id=section_id, section__phase__sweat_sheet__user=user)
-        else:
-            # SweatAthletes can access exercises of their assigned sections
-            return Exercise.objects.filter(section_id=section_id, section__phase__sweat_sheet__assigned_to=user)
-    
-    def perform_create(self, serializer):
-        section_id = self.kwargs.get('section_id')
-        user = self.request.user
-        
-        if has_sweatpro_permissions(user):
-            section = Section.objects.get(id=section_id, phase__sweat_sheet__user=user)
-        else:
-            section = Section.objects.get(id=section_id, phase__sweat_sheet__assigned_to=user)
-        serializer.save(section=section)
+        section_id = self.kwargs['section_id']
+        return Exercise.objects.filter(section_id=section_id)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def complete_phase(request, phase_id):
     try:
-        phase = Phase.objects.get(id=phase_id, sweat_sheet__user=request.user)
+        phase = Phase.objects.get(pk=phase_id)
         phase.is_completed = True
+        phase.completed_at = timezone.now()
         phase.save()
-        return Response({'message': 'Phase completed successfully'}, status=status.HTTP_200_OK)
+        return Response({"message": "Phase completed"})
     except Phase.DoesNotExist:
-        return Response({'error': 'Phase not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Phase not found"}, status=404)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def complete_exercise(request, exercise_id):
     try:
-        exercise = Exercise.objects.get(id=exercise_id, section__phase__sweat_sheet__user=request.user)
-        exercise.completed = not exercise.completed
+        exercise = Exercise.objects.get(pk=exercise_id)
+        exercise.completed = True
         exercise.save()
-        return Response({'message': 'Exercise status updated', 'completed': exercise.completed}, status=status.HTTP_200_OK)
+        return Response({"message": "Exercise completed"})
     except Exercise.DoesNotExist:
-        return Response({'error': 'Exercise not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Exercise not found"}, status=404)

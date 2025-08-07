@@ -3,6 +3,7 @@ import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import api from '../api';
 import { REFRESH_TOKEN, ACCESS_TOKEN } from '../constants';
 import { useEffect, useState } from 'react';
+import LoadingIndicator from './LoadingIndicator';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -16,9 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     useEffect(() => {
-        auth().catch(() => {
-            setIsAuthorized(false);
-        });
+        auth();
     }, []);
 
     const refreshToken = async (): Promise<void> => {
@@ -39,7 +38,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
                 setIsAuthorized(false);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Token refresh error:', error);
             setIsAuthorized(false);
         }
     };
@@ -68,7 +67,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     };
 
     if (isAuthorized === null) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-800">
+                <LoadingIndicator />
+            </div>
+        );
     }
 
     return isAuthorized ? children : <Navigate to="/login" />;

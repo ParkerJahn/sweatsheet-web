@@ -18,6 +18,24 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+body {
+    background-color: #ffffff;
+    transition: background-color 0.3s ease;
+}
+
+.dark body {
+    background-color: #374151; /* bg-neutral-700 */
+}
+
+html {
+    background-color: #ffffff;
+    transition: background-color 0.3s ease;
+}
+
+.dark html {
+    background-color: #374151; /* bg-neutral-700 */
+}
   
   @media screen and (max-height: 450px) {
     .sidenav {padding-top: 15px;}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Crown, Shield, UserCheck } from 'lucide-react';
 import api from '../api';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 interface TeamMember {
   id: number;
@@ -24,12 +25,13 @@ const Team: React.FC = () => {
       try {
         setLoading(true);
         
-        // Load user's role
-        const profileResponse = await api.get('/api/profile/');
-        setUserRole(profileResponse.data.profile.role);
+        // Load user's role and team data in parallel
+        const [profileResponse, usersResponse] = await Promise.all([
+          api.get('/api/profile/'),
+          api.get('/api/users/')
+        ]);
         
-        // Load all users (we'll filter by role on frontend for now)
-        const usersResponse = await api.get('/api/users/');
+        setUserRole(profileResponse.data.profile.role);
         setTeamMembers(usersResponse.data);
       } catch (error) {
         console.error('Error loading team data:', error);
@@ -94,11 +96,8 @@ const Team: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 dark:bg-neutral-800 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading team...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-800">
+        <LoadingIndicator />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Clock, Plus, X } from 'lucide-react';
 import api from '../api';
+import LoadingIndicator from './LoadingIndicator';
 
 // Type definitions
 interface Event {
@@ -27,6 +28,7 @@ const AvailabilityCalendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showTimeSlots, setShowTimeSlots] = useState<boolean>(false);
   const [events, setEvents] = useState<EventsMap>({});
+  const [loading, setLoading] = useState(false);
   const [newEvent, setNewEvent] = useState<NewEvent>({
     time: '',
     title: '',
@@ -35,12 +37,16 @@ const AvailabilityCalendar: React.FC = () => {
   });
 
   useEffect(() => {
+    setLoading(true);
     api.get('/api/calendar/')
       .then(res => {
         setEvents(res.data.events);
       })
       .catch(err => {
         console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -92,7 +98,7 @@ const AvailabilityCalendar: React.FC = () => {
   };
 
   const addEvent = (): void => {
-    if (!selectedDate || !newEvent.time || !newEvent.title) return;
+    if (!selectedDate || !newEvent.time || !newEvent.title.trim()) return;
     
     const eventId: number = Date.now();
     const dateEvents: Event[] = events[selectedDate] || [];
@@ -103,12 +109,16 @@ const AvailabilityCalendar: React.FC = () => {
       [selectedDate]: updatedEvents.sort((a, b) => a.time.localeCompare(b.time))
     };
 
+    setLoading(true);
     api.put('/api/calendar/', { events: newEvents })
       .then(res => {
         setEvents(res.data.events);
       })
       .catch(err => {
         console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
     
     setNewEvent({ time: '', title: '', type: 'availability', duration: 60 });
@@ -129,12 +139,16 @@ const AvailabilityCalendar: React.FC = () => {
       delete newEvents[selectedDate];
     }
 
+    setLoading(true);
     api.put('/api/calendar/', { events: newEvents })
       .then(res => {
         setEvents(res.data.events);
       })
       .catch(err => {
         console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -147,6 +161,14 @@ const AvailabilityCalendar: React.FC = () => {
   };
 
   const days: (number | null)[] = getDaysInMonth(currentDate);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-800">
+        <LoadingIndicator />
+      </div>
+    );
+  }
 
   return (
     <div className="mt-10 max-w-4xl mx-auto p-6 bg-white dark:bg-neutral-800 rounded-lg shadow-lg">
@@ -187,21 +209,25 @@ const AvailabilityCalendar: React.FC = () => {
 
           <div className="grid grid-cols-7 gap-1">
             {days.map((day: number | null, index: number) => {
-              const isSelected: boolean = day !== null && selectedDate === formatDate(currentDate.getFullYear(), currentDate.getMonth(), day);
               const eventTypes: string[] = getEventTypes(day);
-              
+              const isToday: boolean = day !== null && 
+                new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+              const isSelected: boolean = day !== null && 
+                selectedDate === formatDate(currentDate.getFullYear(), currentDate.getMonth(), day);
+
               return (
                 <button
                   key={index}
                   onClick={() => selectDate(day)}
-                  disabled={!day}
+                  disabled={day === null}
                   className={`
-                    p-2 h-12 text-sm rounded-lg transition-all relative
-                    ${!day ? 'invisible' : ''}
-                    ${isSelected 
-                      ? 'bg-blue-600 text-white shadow-md' 
-                      : 'bg-white dark:bg-neutral-600 hover:bg-gray-100 dark:hover:bg-neutral-500 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-neutral-500'
+                    relative p-3 text-center text-sm transition-colors rounded-lg
+                    ${day === null 
+                      ? 'invisible' 
+                      : 'hover:bg-gray-200 dark:hover:bg-neutral-600 text-gray-800 dark:text-white'
                     }
+                    ${isToday ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500' : ''}
+                    ${isSelected ? 'bg-blue-200 dark:bg-blue-800' : ''}
                   `}
                 >
                   {day}
@@ -219,20 +245,9 @@ const AvailabilityCalendar: React.FC = () => {
               );
             })}
           </div>
-
-          <div className="mt-4 flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-400">Availability</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <span className="text-gray-600 dark:text-gray-400">Meeting</span>
-            </div>
-          </div>
         </div>
 
-        {/* Time Slots & Events */}
+        {/* Time Slots Panel */}
         <div className="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4">
           {showTimeSlots && selectedDate ? (
             <>
@@ -292,13 +307,18 @@ const AvailabilityCalendar: React.FC = () => {
                       Time
                     </label>
                     <input
-                      type="Time"
+                      type="time"
                       value={newEvent.time}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
                         setNewEvent({...newEvent, time: e.target.value})
                       }
                       className="w-full p-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-neutral-600 text-gray-900 dark:text-white"
+                      placeholder="HH:MM"
+                      step="900"
                     />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Use 24-hour format (e.g., 14:30 for 2:30 PM)
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -348,7 +368,7 @@ const AvailabilityCalendar: React.FC = () => {
                   </div>
                   <button
                     onClick={addEvent}
-                    disabled={!newEvent.time || !newEvent.title}
+                    disabled={!newEvent.time || !newEvent.title.trim()}
                     className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-neutral-600 disabled:cursor-not-allowed transition-colors"
                   >
                     Add Event

@@ -32,8 +32,7 @@ class Command(BaseCommand):
         # Create categories and exercises
         for category_name, exercises in workout_data.items():
             category, created = WorkoutCategory.objects.get_or_create(
-                name=category_name,
-                defaults={'description': f'{category_name} exercises'}
+                name=category_name
             )
             
             if created:
@@ -45,7 +44,7 @@ class Command(BaseCommand):
                 exercise, created = WorkoutExercise.objects.get_or_create(
                     name=exercise_name,
                     category=category,
-                    defaults={'description': f'{exercise_name} exercise'}
+                    defaults={'description': f'{exercise_name} exercise for {category_name}'}
                 )
                 
                 if created:

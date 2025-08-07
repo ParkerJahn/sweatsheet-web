@@ -7,26 +7,31 @@ function Home() {
     const [welcomeMessage, setWelcomeMessage] = useState("");
 
     useEffect(() => {
-        api.get('/api/profile/')
-            .then(res => {
-                const lastLogin = localStorage.getItem('lastLogin');
-                if (lastLogin) {
-                    const messages = [
-                        `WELCOME BACK, ${res.data.first_name.toUpperCase()}!`,
-                        "LET'S GET TO WORK!",
-                        "NO BETTER DAY THAN TODAY!"
-                    ];
-                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                    setWelcomeMessage(randomMessage);
-                } else {
-                    setWelcomeMessage(`WELCOME, ${res.data.first_name.toUpperCase()}!`);
-                }
-                localStorage.setItem('lastLogin', new Date().toISOString());
-            })
-            .catch(err => {
-                console.error(err);
-            });
+        loadProfile();
     }, []);
+
+    const loadProfile = async () => {
+        try {
+            const response = await api.get('/api/profile/');
+            
+            const lastLogin = localStorage.getItem('lastLogin');
+            if (lastLogin) {
+                const messages = [
+                    `WELCOME BACK, ${response.data.first_name.toUpperCase()}!`,
+                    "LET'S GET TO WORK!",
+                    "NO BETTER DAY THAN TODAY!"
+                ];
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                setWelcomeMessage(randomMessage);
+            } else {
+                setWelcomeMessage(`WELCOME, ${response.data.first_name.toUpperCase()}!`);
+            }
+            localStorage.setItem('lastLogin', new Date().toISOString());
+        } catch (err) {
+            console.error('Error loading profile:', err);
+            setWelcomeMessage("WELCOME!");
+        }
+    };
 
     return (
         <div>

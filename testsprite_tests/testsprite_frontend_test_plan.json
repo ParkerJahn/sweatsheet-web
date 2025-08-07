@@ -1,0 +1,565 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Registration Success",
+    "description": "Verify that a new user can register successfully with valid inputs and receive a confirmation.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the registration page."
+      },
+      {
+        "type": "action",
+        "description": "Fill in valid user details and select a role (SweatPro/SweatTeamMember/SweatAthlete)."
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user is registered, receives confirmation, and is redirected to the onboarding wizard."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Registration Input Validation",
+    "description": "Check input validation and error handling when registering with invalid or missing fields.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the registration page."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit empty registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure error messages appear for required fields."
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid email and weak password, then attempt to submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure proper validation errors for email format and password complexity."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login with Correct Credentials",
+    "description": "Check login is successful and JWT token is issued with correct credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Input valid registered username/email and password."
+      },
+      {
+        "type": "action",
+        "description": "Click login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login success, JWT token is stored, and user is redirected to role-based dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "User Login Failure with Incorrect Credentials",
+    "description": "Verify login fails with invalid username/email or password and proper error message is shown.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Input incorrect username/email or password."
+      },
+      {
+        "type": "action",
+        "description": "Click login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login failure and appropriate error is displayed without issuing token."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Password Recovery Flow",
+    "description": "Validate the password recovery process works end-to-end including reset email and password update.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to password recovery page."
+      },
+      {
+        "type": "action",
+        "description": "Submit registered email for password reset."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reset email is sent."
+      },
+      {
+        "type": "action",
+        "description": "Follow reset link and enter new valid password."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm password is updated and user can login with new password."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "SweatSheet Creation and Validation",
+    "description": "Verify that SweatPros can create and save personalized SweatSheets with exercises, media attachments, and validations.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as SweatPro, navigate to SweatSheet creation page."
+      },
+      {
+        "type": "action",
+        "description": "Add a new SweatSheet with a title, description, and multiple exercises using drag-and-drop."
+      },
+      {
+        "type": "action",
+        "description": "Attach media files (images/videos) to exercises."
+      },
+      {
+        "type": "action",
+        "description": "Save the SweatSheet."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify SweatSheet is created, saved correctly, and all media attachments are accessible."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "SweatSheet Assignment and Access",
+    "description": "Verify that assigned SweatSheets are accessible and trackable by assigned SweatAthletes.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as SweatPro and assign an existing SweatSheet to a SweatAthlete."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm assignment notification is sent to the athlete."
+      },
+      {
+        "type": "action",
+        "description": "Login as the assigned SweatAthlete and access the assigned SweatSheet."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify full access to the SweatSheet, progress tracking, and ability to mark exercises as complete."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Prevent SweatSheet Access by Unassigned Users",
+    "description": "Ensure that SweatSheets are not accessible to users who are not assigned to them.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a SweatAthlete who has not been assigned a particular SweatSheet."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access the unassigned SweatSheet via direct URL."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and appropriate error or redirection occurs."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Trainer Availability Display in Calendar",
+    "description": "Verify that trainer availabilities are correctly displayed in the booking calendar for athletes.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a trainer and set availability on the calendar."
+      },
+      {
+        "type": "action",
+        "description": "Login as a SweatAthlete and navigate to booking calendar."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate that trainer's available time slots appear accurately."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Session Booking Workflow",
+    "description": "Test athlete booking flow including selecting time slot, booking confirmation, calendar sync, and automated reminders.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as SweatAthlete and select an available trainer time slot."
+      },
+      {
+        "type": "action",
+        "description": "Submit session booking request."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm booking success message, calendar event sync, and receipt of automated reminder notification."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Booking Conflict Prevention",
+    "description": "Verify that booking system prevents double booking and conflicts with existing sessions.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a booking for a trainer’s time slot as one athlete."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to book the same time slot by another athlete."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure booking is declined with a conflict error."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Session Cancellation and Notification",
+    "description": "Verify that athletes and trainers can cancel sessions and that cancellations trigger appropriate notifications.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as athlete or trainer and cancel a booked session."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm cancellation confirmation, calendar update, and notification sent to other party."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Real-Time Messaging Delivery & Notifications",
+    "description": "Verify real-time delivery of 1:1 and group messages including push and email notifications.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as two different users in separate sessions."
+      },
+      {
+        "type": "action",
+        "description": "Send a private message from one user to the other."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify immediate message receipt and notification appearance."
+      },
+      {
+        "type": "action",
+        "description": "Create a group chat and send a group message."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure all group members receive the message and notifications."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Messaging Error Handling",
+    "description": "Test messaging system responds gracefully to network disconnections and server errors.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate network loss during message send."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm appropriate error message and retry capability."
+      },
+      {
+        "type": "action",
+        "description": "Simulate server-side failure during message delivery."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is notified of failure and message is not lost."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Secure Payment Processing - Success Flow",
+    "description": "Verify exercise packages and shop items can be purchased securely using multiple payment methods with success confirmation.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as any user and navigate to shop."
+      },
+      {
+        "type": "action",
+        "description": "Add package or item to cart and proceed to payment."
+      },
+      {
+        "type": "action",
+        "description": "Complete payment using supported payment method."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment success notification, receipt generation, and update in user payment dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Secure Payment Processing - Failure Scenarios",
+    "description": "Test payment processing handles declined cards, network errors, and validation failures gracefully.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt payment with invalid card details."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate error message is displayed and user can retry."
+      },
+      {
+        "type": "action",
+        "description": "Simulate payment gateway downtime."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system displays payment unavailable message and does not lose cart data."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Shop Product Listing and Inventory Management",
+    "description": "Verify all shop products are listed correctly with stock levels and that inventory decrements upon purchase.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the shop page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify product details, images, prices, and availability status are displayed accurately."
+      },
+      {
+        "type": "action",
+        "description": "Purchase a product."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify inventory count is decreased accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Responsive UI on Multiple Devices",
+    "description": "Confirm that the application UI renders correctly and is fully functional on desktop, tablet, and mobile devices with responsive navigation and layout.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open application on desktop browser."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI layout, navigation menus, and functionality work as expected."
+      },
+      {
+        "type": "action",
+        "description": "Open application on tablet device/browser emulator."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify responsive layout and UI elements adapt properly."
+      },
+      {
+        "type": "action",
+        "description": "Open application on mobile device/browser emulator."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm touch interactions, layout adjustments, and navigation usability."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Theme Toggle Dark/Light Mode Persistence",
+    "description": "Verify UI theme toggle works smoothly with transitions and persists user preference across sessions.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Toggle theme from light to dark mode."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI switches theme with smooth transition."
+      },
+      {
+        "type": "action",
+        "description": "Log out and log in again."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm previously selected theme persists correctly."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Access Control with JWT Protected Routes",
+    "description": "Validate endpoint and route access based on user roles and that JWT tokens protect resources from unauthorized access.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as each role (SweatPro, SweatTeamMember, SweatAthlete)."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access role-specific protected routes and protected APIs."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is granted appropriately and all unauthorized attempts are blocked."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access protected routes without JWT token or with invalid token."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm system denies access and redirects to login."
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Loading Indicators and UI State Error Handling",
+    "description": "Confirm the presence and correctness of loading states and error messages during asynchronous operations.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger asynchronous data loading (e.g., fetching SweatSheets, messages, shop products)."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify loading indicators are shown during data fetch."
+      },
+      {
+        "type": "action",
+        "description": "Simulate API failure during data loading."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error handling UI appears with retry options."
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Google Analytics 4 Event Tracking",
+    "description": "Verify key user actions trigger correct event tracking calls to Google Analytics 4.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform critical actions such as login, SweatSheet creation, booking session, messaging, and purchase."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that corresponding GA4 events are sent with accurate parameters."
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "System Performance Under Load",
+    "description": "Validate application maintains uptime above 99.9% and average page load times under 2 seconds under typical usage scenarios.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate concurrent users performing normal operations in test environment."
+      },
+      {
+        "type": "assertion",
+        "description": "Monitor uptime metrics and page load times to ensure compliance with targets."
+      }
+    ]
+  }
+]

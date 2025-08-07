@@ -1,0 +1,121 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "React",
+    "Vite",
+    "Tailwind CSS",
+    "React Router",
+    "Lucide React",
+    "Axios",
+    "JWT",
+    "Google Analytics"
+  ],
+  "features": [
+    {
+      "name": "Authentication System",
+      "description": "Complete authentication system with login, register, JWT token management, and protected routes",
+      "files": [
+        "frontend/src/pages/Login.tsx",
+        "frontend/src/pages/Register.tsx",
+        "frontend/src/components/Form.tsx",
+        "frontend/src/components/ProtectedRoute.tsx",
+        "frontend/src/api.ts",
+        "frontend/src/constants.ts"
+      ]
+    },
+    {
+      "name": "Navigation & Header",
+      "description": "Responsive header with theme toggle, user avatar, navigation menu, and dark/light mode support",
+      "files": [
+        "frontend/src/components/Header.tsx",
+        "frontend/src/components/Header.css",
+        "frontend/src/components/Avatar.tsx"
+      ]
+    },
+    {
+      "name": "SweatSheet Management",
+      "description": "Complete workout program management system with creator, viewer, manager, and assignment features",
+      "files": [
+        "frontend/src/components/SweatSheetCreator.tsx",
+        "frontend/src/components/SweatSheetViewer.tsx",
+        "frontend/src/components/SweatSheetManager.tsx",
+        "frontend/src/components/SweatSheetAssignment.tsx",
+        "frontend/src/pages/SweatSheet.tsx"
+      ]
+    },
+    {
+      "name": "User Profile & Team",
+      "description": "User profile management, team display, and user information handling",
+      "files": [
+        "frontend/src/pages/Profile.tsx",
+        "frontend/src/pages/Team.tsx"
+      ]
+    },
+    {
+      "name": "Calendar & Scheduling",
+      "description": "Calendar functionality with availability management and scheduling features",
+      "files": [
+        "frontend/src/pages/Calendar.tsx",
+        "frontend/src/components/AvailabilityCalendar.tsx"
+      ]
+    },
+    {
+      "name": "Messaging System",
+      "description": "Real-time messaging system with conversations and message management",
+      "files": [
+        "frontend/src/pages/Messages.tsx"
+      ]
+    },
+    {
+      "name": "Settings & Shop",
+      "description": "User settings management and e-commerce shop functionality",
+      "files": [
+        "frontend/src/pages/Settings.tsx",
+        "frontend/src/pages/Shop.tsx"
+      ]
+    },
+    {
+      "name": "Analytics Integration",
+      "description": "Google Analytics 4 integration with comprehensive event tracking and user analytics",
+      "files": [
+        "frontend/src/services/analytics.ts",
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "name": "Loading & UI States",
+      "description": "Loading indicators, error handling, and UI state management",
+      "files": [
+        "frontend/src/components/LoadingIndicator.tsx",
+        "frontend/src/components/LoadingPage.tsx",
+        "frontend/src/contexts/LoadingContext.tsx"
+      ]
+    },
+    {
+      "name": "Theme System",
+      "description": "Dark/light theme system with persistent storage and smooth transitions",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/Header.tsx",
+        "frontend/src/pages/Settings.tsx",
+        "frontend/src/index.css"
+      ]
+    },
+    {
+      "name": "Main Application",
+      "description": "Core application setup with routing, analytics initialization, and global state management",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/main.tsx",
+        "frontend/src/index.css"
+      ]
+    },
+    {
+      "name": "Home & Landing",
+      "description": "Home page with welcome messages and user dashboard",
+      "files": [
+        "frontend/src/pages/Home.tsx"
+      ]
+    }
+  ]
+} 

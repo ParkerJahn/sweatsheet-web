@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Edit, Save, X, Mail, Phone } from 'lucide-react';
 import api from '../api';
 import Avatar from '../components/Avatar';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 interface ProfileData {
     username: string;
@@ -26,7 +27,6 @@ interface EditFormData {
 function Profile() {
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [editForm, setEditForm] = useState<EditFormData>({});
 
@@ -36,7 +36,6 @@ function Profile() {
 
     const loadProfile = async () => {
         try {
-            setLoading(true);
             const response = await api.get('/api/profile/');
             setProfile(response.data);
             setEditForm({
@@ -49,8 +48,6 @@ function Profile() {
             });
         } catch (err) {
             console.error(err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -90,16 +87,12 @@ function Profile() {
         }
     };
 
-    if (loading) {
+    if (!profile) {
         return (
-            <div className="mt-12 max-w-md mx-auto flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-800">
+                <LoadingIndicator />
             </div>
         );
-    }
-
-    if (!profile) {
-        return <div>Error loading profile</div>;
     }
 
     return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Calendar, Users, User, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Plus, Trash2, Calendar, User, ArrowLeft, ArrowRight } from 'lucide-react';
 import { sweatSheetApi } from '../api';
 
 interface User {
@@ -57,6 +57,21 @@ interface SweatSheet {
   assigned_to_name: string;
 }
 
+// API response interface for SweatSheets
+interface SweatSheetApiResponse {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  is_template: boolean;
+  phases: Phase[];
+  creator_name: string;
+  assigned_to_name: string;
+  assigned_to?: number;
+  assigned_to_id?: number;
+}
+
 // Workout data from API
 interface WorkoutCategory {
   id: number;
@@ -85,12 +100,14 @@ const SweatSheetCreator: React.FC = () => {
   const [workoutCategories, setWorkoutCategories] = useState<WorkoutCategory[]>([]);
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         setLoading(true);
+        setError('');
         
         // Load athletes
         const athletesResponse = await sweatSheetApi.getAthletes();
@@ -104,6 +121,7 @@ const SweatSheetCreator: React.FC = () => {
         setWorkoutExercises(exercisesResponse.data);
       } catch (error) {
         console.error('Error loading initial data:', error);
+        setError('Failed to load workout data. Please refresh the page and try again.');
       } finally {
         setLoading(false);
       }
@@ -154,10 +172,13 @@ const SweatSheetCreator: React.FC = () => {
       newPhase.sections.push(newSection);
     }
 
-    setSweatSheet(prev => ({
-      ...prev,
-      phases: [...prev.phases, newPhase]
-    }));
+    setSweatSheet(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        phases: [...prev.phases, newPhase]
+      };
+    });
   };
 
   const addExercise = (phaseIndex: number, sectionIndex: number) => {
@@ -336,15 +357,7 @@ const SweatSheetCreator: React.FC = () => {
     });
   };
 
-  const updateSectionDate = (phaseIndex: number, sectionIndex: number, date: string) => {
-    setSweatSheet(prev => {
-      if (!prev) return prev;
-      
-      const updatedPhases = [...prev.phases];
-      updatedPhases[phaseIndex].sections[sectionIndex].date = date;
-      return { ...prev, phases: updatedPhases };
-    });
-  };
+
 
   const completePhase = (phaseIndex: number) => {
     if (phaseIndex < 4) {
@@ -368,7 +381,7 @@ const SweatSheetCreator: React.FC = () => {
       console.log(`Phase ${phase.phase_number} has ${phase.sections.length} sections`);
       
       // Ensure we have exactly 8 sections
-      let sections = [...phase.sections];
+      const sections = [...phase.sections];
       
       // If we have fewer than 8 sections, add missing ones
       while (sections.length < 8) {
@@ -440,7 +453,13 @@ const SweatSheetCreator: React.FC = () => {
       const response = await sweatSheetApi.getSweatSheets();
       console.log('All SweatSheets from API:', response.data);
       
-      const athleteSweatSheet = response.data.find((sheet: any) => sheet.assigned_to === athlete.id);
+      const athleteSweatSheet = response.data.find((sheet: SweatSheetApiResponse) => {
+        // Check if the sheet is assigned to this athlete
+        // The backend might return different field names, so we'll be flexible
+        return sheet.assigned_to === athlete.id || 
+               sheet.assigned_to_id === athlete.id ||
+               sheet.assigned_to_name === `${athlete.first_name} ${athlete.last_name}`;
+      });
 
       if (athleteSweatSheet) {
         console.log('Found existing SweatSheet:', athleteSweatSheet);
@@ -561,26 +580,71 @@ const SweatSheetCreator: React.FC = () => {
           SweatSheet Creator
         </h1>
 
-        {/* Athletes List */}
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Error
+                </h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                  {error}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Athletes Dropdown */}
         <div className="mb-6">
           <h2 className="font-ethnocentric text-2xl font-bold text-gray-800 dark:text-white mb-4">
             Select Athlete
           </h2>
-          <div className="flex space-x-2 overflow-x-auto pb-4">
-            {athletes.map(athlete => (
-              <button
-                key={athlete.id}
-                onClick={() => handleAthleteSelect(athlete)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                  selectedAthlete?.id === athlete.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-neutral-600'
-                }`}
-              >
-                {athlete.first_name} {athlete.last_name}
-              </button>
-            ))}
+          <div className="relative">
+            <select
+              value={selectedAthlete?.id || ''}
+              onChange={(e) => {
+                const athleteId = parseInt(e.target.value);
+                const athlete = athletes.find(a => a.id === athleteId);
+                if (athlete) {
+                  handleAthleteSelect(athlete);
+                }
+              }}
+              className="w-full p-3 text-lg border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+            >
+              <option value="">Select an athlete to activate their training program...</option>
+              {athletes.map(athlete => (
+                <option key={athlete.id} value={athlete.id}>
+                  {athlete.first_name} {athlete.last_name}
+                </option>
+              ))}
+            </select>
           </div>
+          
+          {/* Selected Athlete Display */}
+          {selectedAthlete && (
+            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                    {selectedAthlete.first_name} {selectedAthlete.last_name}
+                  </h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    Training program activated
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Selected Athlete SweatSheet */}
@@ -593,7 +657,7 @@ const SweatSheetCreator: React.FC = () => {
             {/* Phase Navigation */}
             <div className="mb-6">
               <div className="flex space-x-2">
-                {sweatSheet?.phases.map((phase, phaseIndex) => (
+                {sweatSheet?.phases.map((phase) => (
                   <button
                     key={phase.id}
                     onClick={() => setCurrentPhase(phase.phase_number)}
