@@ -8,10 +8,10 @@ img {
     bottom: 0;
     left: 0;
     height: 2px;
-    width: 60px; /* Fixed width for shorter line */
+    width: 100%; /* Fixed width for shorter line */
     background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
     background-size: 200% 100%;
-    animation: slideAndGlow 6s ease-in-out infinite; /* Increased from 3s to 6s */
+    animation: Glow 10s ease-in-out infinite; /* Increased from 3s to 6s */
     border-radius: 1px;
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
@@ -22,50 +22,34 @@ img {
     box-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
 }
 
-@keyframes slideAndGlow {
-    0% {
-        left: 0%;
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    50% {
-        left: calc(100% - 60px); /* Account for line width */
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
+@keyframes Glow {
+ 
     100% {
-        left: 100%;
-        opacity: 0;
+        background-position: 100% 0;
+        opacity: 1;
     }
 }
 
-/* Alternative animation for a continuous flowing line */
-.flowing-line {
+/* Animated border styles for cards */
+.rotating-border {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, #3b82f6, #8b5cf6, #06b6d4, transparent);
-    background-size: 200% 100%;
-    animation: flow 4s linear infinite;
-    border-radius: 1px;
+    inset: -3px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981, #f59e0b, #ef4444, #ec4899, #3b82f6);
+    background-size: 400% 400%;
+    border-radius: 15px;
+    animation: borderRotate 8s ease-in-out infinite;
+    z-index: -1;
+    opacity: 0.9;
 }
 
-.dark .flowing-line {
-    background: linear-gradient(90deg, transparent, #60a5fa, #a78bfa, #22d3ee, transparent);
-    background-size: 200% 100%;
+.dark .rotating-border {
+    background: linear-gradient(45deg, #60a5fa, #a78bfa, #22d3ee, #34d399, #fbbf24, #f87171, #f472b6, #60a5fa);
+    background-size: 400% 400%;
 }
 
-@keyframes flow {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+@keyframes borderRotate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
+

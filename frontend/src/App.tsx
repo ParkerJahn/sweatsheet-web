@@ -1,5 +1,6 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import './components/Header.css';
 import './index.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
@@ -9,6 +10,8 @@ import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import Calendar from './pages/Calendar';
 import Profile from './pages/Profile';
+import SweatSheet from './pages/SweatSheet';
+import { ACCESS_TOKEN } from './constants';
 
 // Initialize theme on app load
 const initializeTheme = () => {
@@ -28,8 +31,21 @@ function Logout() {
   return <Navigate to="/login" />;
 }
 
-function RegisterAndLogout() {
-  localStorage.clear();
+// Wrapper for login page - redirect authenticated users to home
+function LoginWrapper() {
+  const token = localStorage.getItem(ACCESS_TOKEN);
+  if (token) {
+    return <Navigate to="/" />;
+  }
+  return <Login />;
+}
+
+// Wrapper for register page - redirect authenticated users to home
+function RegisterWrapper() {
+  const token = localStorage.getItem(ACCESS_TOKEN);
+  if (token) {
+    return <Navigate to="/" />;
+  }
   return <Register />;
 }
 
@@ -59,8 +75,13 @@ function App() {
               <Profile />
             </ProtectedRoute>
           } />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<RegisterAndLogout />} />
+          <Route path="/sweatsheet" element={
+            <ProtectedRoute>
+              <SweatSheet />
+            </ProtectedRoute>
+          } />
+          <Route path="/login" element={<LoginWrapper />} />
+          <Route path="/register" element={<RegisterWrapper />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/logout" element={<Logout />} />
         </Routes>

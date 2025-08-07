@@ -12,28 +12,59 @@ interface ProfileData {
 
 function Header() {
     const [profile, setProfile] = useState<ProfileData | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     useEffect(() => {
-        if (localStorage.getItem(ACCESS_TOKEN)) {
-            api.get('/api/profile/')
-                .then(res => {
-                    // Transform the data to match Avatar component expectations
-                    const profileData = {
-                        first_name: res.data.first_name,
-                        last_name: res.data.last_name
-                    };
-                    setProfile(profileData);
-                })
-                .catch(err => {
-                    console.error(err);
-                });
-        }
+        const checkAuthStatus = () => {
+            const token = localStorage.getItem(ACCESS_TOKEN);
+            const isAuthenticated = !!token;
+            setIsLoggedIn(isAuthenticated);
+            
+            if (isAuthenticated) {
+                api.get('/api/profile/')
+                    .then(res => {
+                        // Transform the data to match Avatar component expectations
+                        const profileData = {
+                            first_name: res.data.first_name,
+                            last_name: res.data.last_name
+                        };
+                        setProfile(profileData);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        // If profile fetch fails, user might not be properly logged in
+                        setIsLoggedIn(false);
+                        localStorage.removeItem(ACCESS_TOKEN);
+                        localStorage.removeItem(REFRESH_TOKEN);
+                    });
+            } else {
+                setProfile(null);
+            }
+        };
+
+        // Check auth status immediately
+        checkAuthStatus();
+
+        // Listen for storage changes (when login/logout happens)
+        const handleStorageChange = () => {
+            checkAuthStatus();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Also check periodically to catch login events
+        const interval = setInterval(checkAuthStatus, 1000);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(interval);
+        };
     }, []);
 
     return (
     <>
     <div className="flex justify-center items-center relative p-5">
-        {profile && (
+        {isLoggedIn && profile && (
             <a href="/profile" className="cursor-pointer hover:scale-105 transition-transform duration-200 absolute right-4">
                 <Avatar profile={profile} />
             </a>
@@ -46,9 +77,11 @@ function Header() {
       className="hidden dark:block w-[200px] h-[120px] transition-opacity duration-300" 
       src="darkmodelogo.png" 
       alt="DRP Workshop Dark Logo"/>
-        <div className="flex ml-10 justify-end items-center relative">
-          <SideDrawer/>
-        </div>
+        {isLoggedIn && (
+          <div className="flex ml-10 justify-end items-center relative">
+            <SideDrawer/>
+          </div>
+        )}
         {/* Animated line at the bottom of header */}
         <div className="animated-line"></div>
         {/* Alternative flowing line animation (uncomment to use instead) */}
@@ -130,7 +163,7 @@ const SideDrawer: React.FC = () => {
         <nav className="mt-4 space-y-2 pl-2">
           <a 
             href="/"
-            className="font-ethnocentric text-left text-black dark:text-white hover:text-white dark:hover:text-black bg-blue-500 dark:bg-blue-600 hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-700 dark:hover:bg-neutral-100 px-4 py-2 rounded transition"
+            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
             onClick={() => setIsOpen(false)}
             >
             Home
@@ -142,6 +175,14 @@ const SideDrawer: React.FC = () => {
            >
             Calendar
           </a>
+          <a 
+           href="/sweatsheet"
+           className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
+           onClick={() => setIsOpen(false)}
+           >
+            SweatSheet
+          </a>
+
           <a 
            href="/messages"
            className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
