@@ -67,6 +67,7 @@ function Form({ route, method }: { route: string, method: string }) {
                             onChange={(e) => setRole(e.target.value)}
                         >
                             <option value="PRO">SweatPro <span className="text-sm text-gray-500">(coach, trainer, provider)</span></option>
+                            <option value="SWEAT_TEAM_MEMBER">SweatTeamMember <span className="text-sm text-gray-500">(staff, admin, team member)</span></option>
                             <option value="ATHLETE">SweatAthlete <span className="text-sm text-gray-500">(player, client, patient)</span></option>
                         </select>
                         <input 

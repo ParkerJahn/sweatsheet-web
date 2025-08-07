@@ -191,11 +191,11 @@ const SideDrawer: React.FC = () => {
             Messages
           </a>
           <a
-            href="/clients"
+            href="/team"
             className="font-ethnocentric text-left hover:outline hover:outline-neutral-300 dark:hover:outline-neutral-800 block w-full hover:bg-neutral-100 dark:hover:bg-black px-4 py-2 rounded transition"
             onClick={() => setIsOpen(false)}
             >
-            Your Clients
+            Your Team
           </a>
           <a
             href="/shop"

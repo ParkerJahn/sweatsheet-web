@@ -35,7 +35,7 @@ const SweatSheet: React.FC = () => {
 
   return (
     <div>
-      {userRole === 'PRO' ? (
+      {(userRole === 'PRO' || userRole === 'SWEAT_TEAM_MEMBER') ? (
         <SweatSheetCreator />
       ) : (
         <SweatSheetViewer />

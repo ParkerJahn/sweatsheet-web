@@ -15,6 +15,7 @@ urlpatterns = [
     path('sweatsheets/<int:pk>/', views.SweatSheetDetailView.as_view(), name='sweatsheet-detail'),
     path('sweatsheets/<int:pk>/assign/', views.SweatSheetAssignmentView.as_view(), name='sweatsheet-assign'),
     path('users/athletes/', views.UserListView.as_view(), name='user-list'),
+    path('users/', views.AllUsersListView.as_view(), name='all-users-list'),
     path('sweatsheets/<int:sweat_sheet_id>/phases/', views.PhaseListView.as_view(), name='phase-list'),
     path('phases/<int:phase_id>/sections/', views.SectionListView.as_view(), name='section-list'),
     path('sections/<int:section_id>/exercises/', views.ExerciseListView.as_view(), name='exercise-list'),

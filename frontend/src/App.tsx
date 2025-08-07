@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Calendar from './pages/Calendar';
 import Profile from './pages/Profile';
 import SweatSheet from './pages/SweatSheet';
+import Team from './pages/Team';
 import { ACCESS_TOKEN } from './constants';
 
 // Initialize theme on app load
@@ -78,6 +79,11 @@ function App() {
           <Route path="/sweatsheet" element={
             <ProtectedRoute>
               <SweatSheet />
+            </ProtectedRoute>
+          } />
+          <Route path="/team" element={
+            <ProtectedRoute>
+              <Team />
             </ProtectedRoute>
           } />
           <Route path="/login" element={<LoginWrapper />} />

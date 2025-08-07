@@ -13,6 +13,14 @@ from .models import Note, Calendar, Profile, WorkoutCategory, WorkoutExercise, S
 from django.db import models
 from rest_framework import serializers
 
+def has_sweatpro_permissions(user):
+    """Check if user has SweatPro permissions (PRO or SWEAT_TEAM_MEMBER)"""
+    return user.profile.role in ['PRO', 'SWEAT_TEAM_MEMBER']
+
+def is_athlete(user):
+    """Check if user is an athlete"""
+    return user.profile.role == 'ATHLETE'
+
 # Create your views here.
 class NoteListCreate(generics.ListCreateAPIView):
     serializer_class = NoteSerializer
@@ -56,11 +64,11 @@ class CalendarView(generics.RetrieveUpdateAPIView):
         return self.request.user.calendar
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = ProfileUpdateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        return self.request.user.profile
 
 # SweatSheet Views
 class WorkoutCategoryListView(generics.ListAPIView):
@@ -84,10 +92,9 @@ class SweatSheetListView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        user_profile = user.profile
         
-        if user_profile.role == 'PRO':
-            # SweatPros see their created SweatSheets and templates
+        if has_sweatpro_permissions(user):
+            # SweatPros and SweatTeamMembers see their created SweatSheets and templates
             return SweatSheet.objects.filter(
                 models.Q(user=user) | models.Q(is_template=True)
             )
@@ -104,10 +111,9 @@ class SweatSheetDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        user_profile = user.profile
         
-        if user_profile.role == 'PRO':
-            # SweatPros can access their created SweatSheets and templates
+        if has_sweatpro_permissions(user):
+            # SweatPros and SweatTeamMembers can access their created SweatSheets and templates
             return SweatSheet.objects.filter(
                 models.Q(user=user) | models.Q(is_template=True)
             )
@@ -120,13 +126,13 @@ class SweatSheetAssignmentView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Only SweatPros can assign SweatSheets
+        # Only SweatPros and SweatTeamMembers can assign SweatSheets
         return SweatSheet.objects.filter(user=self.request.user)
     
     def perform_update(self, serializer):
         # Validate that assigned user is an athlete
         assigned_user = serializer.validated_data.get('assigned_to')
-        if assigned_user and assigned_user.profile.role != 'ATHLETE':
+        if assigned_user and not is_athlete(assigned_user):
             raise serializers.ValidationError("Can only assign SweatSheets to athletes")
         serializer.save()
 
@@ -135,8 +141,23 @@ class UserListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Only return athletes for assignment
+        # Return athletes for assignment (only ATHLETE role)
         return User.objects.filter(profile__role='ATHLETE')
+
+class AllUsersListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # All users can view the team, but with different filtering based on role
+        if has_sweatpro_permissions(user):
+            # SweatPros and SweatTeamMembers can see all users
+            return User.objects.all().select_related('profile')
+        else:
+            # Athletes can see all users (for team view) but with limited information
+            return User.objects.all().select_related('profile')
 
 class PhaseListView(generics.ListCreateAPIView):
     serializer_class = PhaseSerializer
@@ -144,11 +165,10 @@ class PhaseListView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        user_profile = user.profile
         sweat_sheet_id = self.kwargs.get('sweat_sheet_id')
         
-        if user_profile.role == 'PRO':
-            # SweatPros can access phases of their created SweatSheets
+        if has_sweatpro_permissions(user):
+            # SweatPros and SweatTeamMembers can access phases of their created SweatSheets
             return Phase.objects.filter(sweat_sheet_id=sweat_sheet_id, sweat_sheet__user=user)
         else:
             # SweatAthletes can access phases of their assigned SweatSheets
@@ -157,9 +177,8 @@ class PhaseListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         sweat_sheet_id = self.kwargs.get('sweat_sheet_id')
         user = self.request.user
-        user_profile = user.profile
         
-        if user_profile.role == 'PRO':
+        if has_sweatpro_permissions(user):
             sweat_sheet = SweatSheet.objects.get(id=sweat_sheet_id, user=user)
         else:
             sweat_sheet = SweatSheet.objects.get(id=sweat_sheet_id, assigned_to=user)
@@ -171,11 +190,10 @@ class SectionListView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        user_profile = user.profile
         phase_id = self.kwargs.get('phase_id')
         
-        if user_profile.role == 'PRO':
-            # SweatPros can access sections of their created phases
+        if has_sweatpro_permissions(user):
+            # SweatPros and SweatTeamMembers can access sections of their created phases
             return Section.objects.filter(phase_id=phase_id, phase__sweat_sheet__user=user)
         else:
             # SweatAthletes can access sections of their assigned phases
@@ -184,9 +202,8 @@ class SectionListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         phase_id = self.kwargs.get('phase_id')
         user = self.request.user
-        user_profile = user.profile
         
-        if user_profile.role == 'PRO':
+        if has_sweatpro_permissions(user):
             phase = Phase.objects.get(id=phase_id, sweat_sheet__user=user)
         else:
             phase = Phase.objects.get(id=phase_id, sweat_sheet__assigned_to=user)
@@ -198,11 +215,10 @@ class ExerciseListView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        user_profile = user.profile
         section_id = self.kwargs.get('section_id')
         
-        if user_profile.role == 'PRO':
-            # SweatPros can access exercises of their created sections
+        if has_sweatpro_permissions(user):
+            # SweatPros and SweatTeamMembers can access exercises of their created sections
             return Exercise.objects.filter(section_id=section_id, section__phase__sweat_sheet__user=user)
         else:
             # SweatAthletes can access exercises of their assigned sections
@@ -211,9 +227,8 @@ class ExerciseListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         section_id = self.kwargs.get('section_id')
         user = self.request.user
-        user_profile = user.profile
         
-        if user_profile.role == 'PRO':
+        if has_sweatpro_permissions(user):
             section = Section.objects.get(id=section_id, phase__sweat_sheet__user=user)
         else:
             section = Section.objects.get(id=section_id, phase__sweat_sheet__assigned_to=user)

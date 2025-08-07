@@ -7,6 +7,47 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['phone_number', 'role']
 
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=30, required=False)
+    last_name = serializers.CharField(max_length=30, required=False)
+    email = serializers.EmailField(required=False)
+    phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True)
+    
+    class Meta:
+        model = Profile
+        fields = ['first_name', 'last_name', 'email', 'phone_number']
+    
+    def to_representation(self, instance):
+        """Return user data in the expected format"""
+        return {
+            'username': instance.user.username,
+            'first_name': instance.user.first_name,
+            'last_name': instance.user.last_name,
+            'email': instance.user.email,
+            'profile': {
+                'role': instance.role,
+                'phone_number': instance.phone_number
+            }
+        }
+    
+    def update(self, instance, validated_data):
+        # Update user fields
+        user = instance.user
+        if 'first_name' in validated_data:
+            user.first_name = validated_data['first_name']
+        if 'last_name' in validated_data:
+            user.last_name = validated_data['last_name']
+        if 'email' in validated_data:
+            user.email = validated_data['email']
+        user.save()
+        
+        # Update profile fields
+        if 'phone_number' in validated_data:
+            instance.phone_number = validated_data['phone_number']
+        instance.save()
+        
+        return instance
+
 class CalendarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calendar
